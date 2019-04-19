@@ -1,0 +1,19 @@
+{
+  "name": "bloccit",
+  "version": "1.0.0",
+  "description": "A Reddit clone",
+  "main": "(src/server.js)",
+  "scripts": {
+    "test": "export NODE_ENV=test && jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adamsubtract/Bloccit.git"
+  },
+  "author": "adam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adamsubtract/Bloccit/issues"
+  },
+  "homepage": "https://github.com/adamsubtract/Bloccit#readme"
+}
