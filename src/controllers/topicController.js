@@ -56,10 +56,8 @@ module.exports = {
     });
   },
   update(req, res, next){
-
-    //#1
+    //#1 
          topicQueries.updateTopic(req.params.id, req.body, (err, topic) => {
-    
     //#2
            if(err || topic == null){
              res.redirect(404, `/topics/${req.params.id}/edit`);
