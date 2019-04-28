@@ -8,7 +8,6 @@ describe("Post", () => {
 //#1
     this.topic;
     this.post;
-    this.id;
     sequelize.sync({force: true}).then((res) => {
 
 //#2
@@ -18,7 +17,6 @@ describe("Post", () => {
       })
       .then((topic) => {
         this.topic = topic;
-        this.id = topicId;
 //#3
         Post.create({
           title: "Im sad",
@@ -75,18 +73,20 @@ describe("Post", () => {
    });
 
    describe("#getPosts()", () => {
-
+    
+    it("should return the associated topic", (done) => {
     Post.create({
         title: "Batman faked death and moved to Wakanda",
         body: "Batman has been seen in Wakanda rasing family with Wonder Woman",
-        topicId: this.id
-    });
-    console.log("getPost ====== " + this.topic.getPosts)
-
-    this.topic.getPosts()
-    
+        topicId: this.topic.id
+    })
     .then((posts) => {
-        
+        this.topic.getPosts()
+        .then((posts) => {
+            expect(posts[0].title).toBe("Im sad")
+            expect(posts[1].title).toBe("Batman faked death and moved to Wakanda")
+            done();
+        })
     })
     .catch((err) => {
         console.log(err);
@@ -94,4 +94,5 @@ describe("Post", () => {
     });
 
     });
+   });
 });
