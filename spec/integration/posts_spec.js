@@ -54,6 +54,34 @@ describe("routes : posts", () => {
 
   describe("POST /topics/:topicId/posts/create", () => {
 
+    it("should not create a new post that fails validations", (done) => {
+      const options = {
+        url: `${base}/${this.topic.id}/posts/create`,
+        form: {
+
+//#1
+          title: "a",
+          body: "b"
+        }
+      };
+
+      request.post(options,
+        (err, res, body) => {
+
+//#2
+          Post.findOne({where: {title: "a"}})
+          .then((post) => {
+              expect(post).toBeNull();
+              done();
+          })
+          .catch((err) => {
+            console.log(err);
+            done();
+          });
+        }
+      );
+    });
+
     it("should create a new post and redirect", (done) => {
        const options = {
          url: `${base}/${this.topic.id}/posts/create`,
