@@ -92,6 +92,34 @@ describe("routes : topics", () => {
           }
         );
       });
+
+      it("should not create a new post that fails validations", (done) => {
+        const options = {
+          url: `${base}create`,
+          form: {
+ //#1
+            title: "a",
+            description: "b"
+          }
+        };
+ 
+        request.post(options,
+          (err, res, body) => {
+ 
+ //#2
+            Topic.findOne({where: {title: "a"}})
+            .then((topic) => {
+                expect(topic).toBeNull();
+                done();
+            })
+            .catch((err) => {
+              console.log(err);
+              done();
+            });
+          }
+        );
+      });
+
     });
 
     describe("GET /topics/:id", () => {
