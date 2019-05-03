@@ -7,6 +7,7 @@ const session = require("express-session");
 const flash = require("express-flash");
 
 module.exports = {
+<<<<<<< HEAD
   init(app, express){
     app.set("views", viewsFolder);
     app.set("view engine", "ejs");
@@ -22,3 +23,12 @@ module.exports = {
     app.use(express.static(path.join(__dirname, "..", "assets")));
   }
 };
+=======
+    init(app, express){
+        app.set("views", viewsFolder);
+        app.set("view engine", "ejs");
+        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(express.static(path.join(__dirname, "..", "assets")));
+    }
+};
+>>>>>>> assignment-post-resource-2
