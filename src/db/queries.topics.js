@@ -1,10 +1,10 @@
 const Topic = require("./models").Topic;
 const Post = require("./models").Post;
+const Authorizer = require("../policies/topic");
 
 module.exports = {
-  //#1
   getAllTopics(callback) {
-    return Topic.findAll()
+    return Topic.all()
       .then(topics => {
         callback(null, topics);
       })
@@ -21,12 +21,11 @@ module.exports = {
         callback(null, topic);
       })
       .catch(err => {
-        callback(err);
+        console.log(err);
       });
   },
   getTopic(id, callback) {
     return Topic.findByPk(id, {
-      //#3
       include: [
         {
           model: Post,
@@ -34,7 +33,6 @@ module.exports = {
         }
       ]
     })
-
       .then(topic => {
         callback(null, topic);
       })
@@ -43,19 +41,14 @@ module.exports = {
       });
   },
   deleteTopic(req, callback) {
-    // #1
-    return Topic.findById(req.params.id)
+    return Topic.findByPk(req.params.id)
       .then(topic => {
-        // #2
         const authorized = new Authorizer(req.user, topic).destroy();
-
         if (authorized) {
-          // #3
           topic.destroy().then(res => {
             callback(null, topic);
           });
         } else {
-          // #4
           req.flash("notice", "You are not authorized to do that.");
           callback(401);
         }
@@ -65,18 +58,12 @@ module.exports = {
       });
   },
   updateTopic(req, updatedTopic, callback) {
-    // #1
-    return Topic.findById(req.params.id).then(topic => {
-      // #2
+    return Topic.findByPk(req.params.id).then(topic => {
       if (!topic) {
         return callback("Topic not found");
       }
-
-      // #3
       const authorized = new Authorizer(req.user, topic).update();
-
       if (authorized) {
-        // #4
         topic
           .update(updatedTopic, {
             fields: Object.keys(updatedTopic)
@@ -88,7 +75,6 @@ module.exports = {
             callback(err);
           });
       } else {
-        // #5
         req.flash("notice", "You are not authorized to do that.");
         callback("Forbidden");
       }
