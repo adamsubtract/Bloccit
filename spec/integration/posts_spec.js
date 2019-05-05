@@ -133,7 +133,7 @@ describe("routes : posts", () => {
           request.post(
             `${base}/${this.topic.id}/posts/${this.originalPost.id}/destroy`,
             (err, res, body) => {
-              Post.all().then(posts => {
+              Post.findAll().then(posts => {
                 expect(posts.length).toBe(postCountBeforeDelete);
                 done();
               });
@@ -312,7 +312,7 @@ describe("routes : posts", () => {
           request.post(
             `${base}/${this.topic.id}/posts/${this.userPost.id}/destroy`,
             (err, res, body) => {
-              Post.all().then(posts => {
+              Post.findAll().then(posts => {
                 expect(err).toBeNull();
                 expect(posts.length).toBe(postCountBeforeDelete - 1);
                 done();
@@ -329,7 +329,7 @@ describe("routes : posts", () => {
           request.post(
             `${base}/${this.topic.id}/posts/${this.originalPost.id}/destroy`,
             (err, res, body) => {
-              Post.all().then(posts => {
+              Post.findAll().then(posts => {
                 expect(posts.length).toBe(postCountBeforeDelete);
                 done();
               });
@@ -510,7 +510,7 @@ describe("routes : posts", () => {
           request.post(
             `${base}/${this.topic.id}/posts/${this.originalPost.id}/destroy`,
             (err, res, body) => {
-              Post.findById(1).then(post => {
+              Post.findByPk(1).then(post => {
                 expect(err).toBeNull();
                 expect(post).toBeNull();
                 done();
