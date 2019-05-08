@@ -2,68 +2,75 @@ const sequelize = require("../../src/db/models/index").sequelize;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
 const User = require("../../src/db/models").User;
+const Vote = require("../../src/db/models").Vote;
 
 describe("Post", () => {
   beforeEach(done => {
     this.topic;
     this.post;
     this.user;
-
+    this.vote;
     sequelize.sync({ force: true }).then(res => {
-      // #2
       User.create({
-        email: "starman@tesla.com",
-        password: "Trekkie4lyfe"
+        email: "rock@climb.com",
+        password: "123456"
       }).then(user => {
-        this.user = user; //store the user
-
-        // #3
+        this.user = user;
         Topic.create(
           {
-            title: "Expeditions to Alpha Centauri",
-            description:
-              "A compilation of reports from recent visits to the star system.",
-
-            // #4
+            title: "Carver",
+            description: "tales from beyond the moss",
             posts: [
               {
-                title: "My first visit to Proxima Centauri b",
-                body: "I saw some rocks.",
+                title: "trask the highball",
+                body: "slippery when wet",
                 userId: this.user.id
               }
             ]
           },
           {
-            // #5
             include: {
               model: Post,
               as: "posts"
             }
           }
-        ).then(topic => {
-          this.topic = topic; //store the topic
-          this.post = topic.posts[0]; //store the post
-          done();
-        });
+        )
+          .then(topic => {
+            this.topic = topic;
+            Post.findOne({
+              where: { id: topic.posts[0].id },
+              include: [
+                {
+                  model: Vote,
+                  as: "votes"
+                }
+              ]
+            }).then(post => {
+              this.post = post;
+              done();
+            });
+          })
+          .catch(err => {
+            console.log(err);
+            done();
+          });
       });
     });
   });
 
   describe("#create()", () => {
-    it("should create a post object with a title, body, and assigned topic and user", done => {
-      //#1
+    it("should create a post object with a title body, assigned topic and user", done => {
       Post.create({
-        title: "Pros of Cryosleep during the long journey",
-        body: "1. Not having to answer the 'are we there yet?' question.",
+        title: "Alternate chess rules when you forget all other games",
+        body: "Checkers.",
         topicId: this.topic.id,
         userId: this.user.id
       })
         .then(post => {
-          //#2
-          expect(post.title).toBe("Pros of Cryosleep during the long journey");
-          expect(post.body).toBe(
-            "1. Not having to answer the 'are we there yet?' question."
+          expect(post.title).toBe(
+            "Alternate chess rules when you forget all other games"
           );
+          expect(post.body).toBe("Checkers.");
           expect(post.topicId).toBe(this.topic.id);
           expect(post.userId).toBe(this.user.id);
           done();
@@ -74,15 +81,12 @@ describe("Post", () => {
         });
     });
 
-    it("should not create a post with missing title, body, or assigned topic", done => {
+    it("should not create a post with missing title, body, assigned topic or user", done => {
       Post.create({
-        title: "Pros of Cryosleep during the long journey"
+        title: "Some title",
+        userId: this.user.id
       })
         .then(post => {
-          // the code in this block will not be evaluated since the validation error
-          // will skip it. Instead, we'll catch the error in the catch block below
-          // and set the expectations there
-
           done();
         })
         .catch(err => {
@@ -95,16 +99,13 @@ describe("Post", () => {
 
   describe("#setTopic()", () => {
     it("should associate a topic and a post together", done => {
-      // #1
       Topic.create({
-        title: "Challenges of interstellar travel",
-        description: "1. The Wi-Fi is terrible"
+        title: "When hyperdrive fails",
+        description: "how to repair things",
+        userId: this.user.id
       }).then(newTopic => {
-        // #2
         expect(this.post.topicId).toBe(this.topic.id);
-        // #3
         this.post.setTopic(newTopic).then(post => {
-          // #4
           expect(post.topicId).toBe(newTopic.id);
           done();
         });
@@ -115,7 +116,7 @@ describe("Post", () => {
   describe("#getTopic()", () => {
     it("should return the associated topic", done => {
       this.post.getTopic().then(associatedTopic => {
-        expect(associatedTopic.title).toBe("Expeditions to Alpha Centauri");
+        expect(associatedTopic.title).toBe("Carver");
         done();
       });
     });
@@ -124,11 +125,10 @@ describe("Post", () => {
   describe("#setUser()", () => {
     it("should associate a post and a user together", done => {
       User.create({
-        email: "ada@example.com",
-        password: "password"
+        email: "new@user.com",
+        password: "654321"
       }).then(newUser => {
         expect(this.post.userId).toBe(this.user.id);
-
         this.post.setUser(newUser).then(post => {
           expect(this.post.userId).toBe(newUser.id);
           done();
@@ -138,10 +138,134 @@ describe("Post", () => {
   });
 
   describe("#getUser()", () => {
-    it("should return the associated topic", done => {
+    it("should return the associated user", done => {
       this.post.getUser().then(associatedUser => {
-        expect(associatedUser.email).toBe("starman@tesla.com");
+        expect(associatedUser.email).toBe("rock@climb.com");
         done();
+      });
+    });
+  });
+
+  describe("#getPoints()", () => {
+    it("should return the point total for the associated post", done => {
+      expect(this.post.getPoints()).toBe(0);
+      // console.log("Initial .getPoints value : ", this.post.getPoints());
+      Vote.create({
+        value: 1,
+        userId: this.user.id,
+        postId: this.post.id
+      })
+        .then(res => {
+          Post.findOne({
+            where: { id: this.post.id },
+            include: [
+              {
+                model: Vote,
+                as: "votes"
+              }
+            ]
+          })
+            .then(post => {
+              // console.log(".then - After vote creation", post.votes[0].value);
+              expect(post.getPoints()).toBe(1);
+              done();
+            })
+            .catch(err => {
+              console.log(err);
+              done();
+            });
+        })
+        .catch(err => {
+          console.log(err);
+          done();
+        });
+    });
+  });
+
+  describe("#hasUpvoteFor()", () => {
+    it("should return true if the user with matching userId has an upvote", done => {
+      Post.findOne({
+        where: { id: this.post.id },
+        include: [
+          {
+            model: Vote,
+            as: "votes"
+          }
+        ]
+      }).then(post => {
+        expect(post.hasUpvoteFor(this.user.id)).toBeFalsy();
+        Vote.create({
+          value: 1,
+          userId: this.user.id,
+          postId: this.post.id
+        })
+          .then(res => {
+            Post.findOne({
+              where: { id: this.post.id },
+              include: [
+                {
+                  model: Vote,
+                  as: "votes"
+                }
+              ]
+            })
+              .then(post => {
+                expect(post.hasUpvoteFor(this.user.id)).toBeTruthy();
+                done();
+              })
+              .catch(err => {
+                console.log(err);
+                done();
+              });
+          })
+          .catch(err => {
+            console.log(err);
+            done();
+          });
+      });
+    });
+  });
+
+  describe("#hasDownvoteFor()", () => {
+    it("should return true if the user with matching userId has a downvote", done => {
+      Post.findOne({
+        where: { id: this.post.id },
+        include: [
+          {
+            model: Vote,
+            as: "votes"
+          }
+        ]
+      }).then(post => {
+        expect(post.hasDownvoteFor(this.user.id)).toBeFalsy();
+        Vote.create({
+          value: -1,
+          userId: this.user.id,
+          postId: this.post.id
+        })
+          .then(res => {
+            Post.findOne({
+              where: { id: this.post.id },
+              include: [
+                {
+                  model: Vote,
+                  as: "votes"
+                }
+              ]
+            })
+              .then(post => {
+                expect(post.hasDownvoteFor(this.user.id)).toBeTruthy();
+                done();
+              })
+              .catch(err => {
+                console.log(err);
+                done();
+              });
+          })
+          .catch(err => {
+            console.log(err);
+            done();
+          });
       });
     });
   });
