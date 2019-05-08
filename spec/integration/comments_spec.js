@@ -108,7 +108,7 @@ describe("routes : comments", () => {
 
     describe("POST /topics/:topicId/posts/:postId/comments/:id/destroy", () => {
       it("should not delete the comment with the associated ID", done => {
-        Comment.all().then(comments => {
+        Comment.findAll().then(comments => {
           const commentCountBeforeDelete = comments.length;
           expect(commentCountBeforeDelete).toBe(1);
           request.post(
@@ -116,7 +116,7 @@ describe("routes : comments", () => {
               this.comment.id
             }/destroy`,
             (err, res, body) => {
-              Comment.all().then(comments => {
+              Comment.findAll().then(comments => {
                 expect(err).toBeNull();
                 expect(comments.length).toBe(commentCountBeforeDelete);
                 done();
@@ -194,7 +194,7 @@ describe("routes : comments", () => {
 
     describe("POST /topics/:topicId/posts/:postId/comments/:id/destroy", () => {
       it("should delete the comment with the associated ID", done => {
-        Comment.all().then(comments => {
+        Comment.findAll().then(comments => {
           const commentCountBeforeDelete = comments.length;
           expect(commentCountBeforeDelete).toBe(2);
           request.post(
@@ -203,7 +203,7 @@ describe("routes : comments", () => {
             }/destroy`,
             (err, res, body) => {
               expect(res.statusCode).toBe(302);
-              Comment.all().then(comments => {
+              Comment.findAll().then(comments => {
                 expect(comments.length).toBe(commentCountBeforeDelete - 1);
                 done();
               });
@@ -213,7 +213,7 @@ describe("routes : comments", () => {
       });
 
       it("should not delete a comment if you are not the owner", done => {
-        Comment.all().then(comments => {
+        Comment.findAll().then(comments => {
           const commentCountBeforeDelete = comments.length;
           expect(commentCountBeforeDelete).toBe(2);
           request.post(
@@ -221,7 +221,7 @@ describe("routes : comments", () => {
               this.altComment.id
             }/destroy`,
             (err, res, body) => {
-              Comment.all().then(comments => {
+              Comment.findAll().then(comments => {
                 expect(comments.length).toBe(commentCountBeforeDelete);
                 done();
               });
@@ -248,14 +248,14 @@ describe("routes : comments", () => {
 
       describe("POST /topics/:topicId/posts/:postId/comments/:commentId/destroy", () => {
         it("should be able to delete other user's comments", done => {
-          Comment.all().then(comments => {
+          Comment.findAll().then(comments => {
             expect(comments[0].id).toBe(1);
             request.post(
               `${base}${this.topic.id}/posts/${this.post.id}/comments/${
                 this.comment.id
               }/destroy`,
               (err, res, body) => {
-                Comment.findById(1).then(comment => {
+                Comment.findByPk(1).then(comment => {
                   expect(err).toBeNull();
                   expect(comment).toBeNull();
                   done();

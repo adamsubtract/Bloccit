@@ -3,6 +3,7 @@ const Topic = require("./models").Topic;
 const Comment = require("./models").Comment;
 const User = require("./models").User;
 const Authorizer = require("../policies/post");
+const Vote = require("./models").Vote;
 
 module.exports = {
   addPost(newPost, callback) {
@@ -16,27 +17,17 @@ module.exports = {
   },
   getPost(id, callback) {
     return Post.findByPk(id, {
-      include: [{ model: Comment, as: "comments", include: [{ model: User }] }]
+      include: [
+        {
+          model: Comment,
+          as: "comments",
+          include: [{ model: User }]
+        },
+        { model: Vote, as: "votes" }
+      ]
     })
       .then(post => {
         callback(null, post);
-      })
-      .catch(err => {
-        callback(err);
-      });
-  },
-  deletePost(req, callback) {
-    return Post.findByPk(req.params.id)
-      .then(post => {
-        const authorized = new Authorizer(req.user, post).destroy();
-        if (authorized) {
-          post.destroy().then(res => {
-            callback(null, post);
-          });
-        } else {
-          req.flash("notice", "You are not authorized to do that.");
-          callback(401);
-        }
       })
       .catch(err => {
         callback(err);
