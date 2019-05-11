@@ -3,11 +3,11 @@ module.exports = (sequelize, DataTypes) => {
   var Favorite = sequelize.define(
     "Favorite",
     {
-      postId: {
+      userId: {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      userId: {
+      postId: {
         type: DataTypes.INTEGER,
         allowNull: false
       }
@@ -20,10 +20,20 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "postId",
       onDelete: "CASCADE"
     });
-
     Favorite.belongsTo(models.User, {
       foreignKey: "userId",
       onDelete: "CASCADE"
+    });
+    Favorite.addScope("allFavorites", userId => {
+      return {
+        include: [
+          {
+            model: models.Post
+          }
+        ],
+        where: { userId: userId },
+        order: [["createdAt", "DESC"]]
+      };
     });
   };
   return Favorite;
