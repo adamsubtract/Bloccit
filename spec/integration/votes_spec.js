@@ -141,12 +141,12 @@ describe("routes : votes", () => {
           url: `${base}${this.topic.id}/posts/${this.post.id}/votes/upvote`
         };
         request.get(options, (err, res, body) => {
-          Vote.all()
+          Vote.findAll()
             .then(votes => {
               const voteCountBeforeChange = votes.length;
               expect(voteCountBeforeChange).toBe(1);
               request.get(options, (err, res, body) => {
-                Vote.all().then(votes => {
+                Vote.findAll().then(votes => {
                   expect(votes.length).toBe(voteCountBeforeChange);
                   done();
                 });
@@ -191,12 +191,12 @@ describe("routes : votes", () => {
           url: `${base}${this.topic.id}/posts/${this.post.id}/votes/downvote`
         };
         request.get(options, (err, res, body) => {
-          Vote.all()
+          Vote.findAll()
             .then(votes => {
               const voteCountBeforeChange = votes.length;
               expect(voteCountBeforeChange).toBe(1);
               request.get(options, (err, res, body) => {
-                Vote.all().then(votes => {
+                Vote.findAll().then(votes => {
                   expect(votes.length).toBe(voteCountBeforeChange);
                   done();
                 });
